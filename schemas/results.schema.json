@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://metasoft.github.io/mbp/schemas/results.schema.json",
+  "title": "Metasoft Benchmark Results",
+  "description": "Multi-dimensional results with category breakdown and a failure corpus. A single aggregate score is not required and is discouraged as the only reported number.",
+  "type": "object",
+  "required": ["benchmark", "system_under_test", "dataset", "metrics"],
+  "additionalProperties": false,
+  "properties": {
+    "benchmark": {
+      "type": "object",
+      "required": ["id", "version", "protocol_version", "mode"],
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string" },
+        "version": { "type": "string" },
+        "protocol_version": { "type": "string" },
+        "mode": { "enum": ["OPEN_SUITE", "HIDDEN_SUITE"] }
+      }
+    },
+    "system_under_test": {
+      "type": "object",
+      "required": ["id"],
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string" },
+        "version": { "type": "string" }
+      }
+    },
+    "dataset": {
+      "type": "object",
+      "required": ["version", "hash"],
+      "additionalProperties": true,
+      "properties": {
+        "version": { "type": "string" },
+        "hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "cases": { "type": "integer" },
+        "events": { "type": "integer" }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "description": "Multi-dimensional metrics. Keys are metric names; values are metric objects with at least a value.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["value"],
+        "additionalProperties": true,
+        "properties": {
+          "value": { "type": ["number", "string", "boolean", "null"] },
+          "unit": { "type": "string" },
+          "cases": { "type": "integer" },
+          "events": { "type": "integer" }
+        }
+      }
+    },
+    "category_breakdown": {
+      "type": "object",
+      "description": "Metrics partitioned by category (e.g. language, difficulty, case type).",
+      "additionalProperties": { "type": "object" }
+    },
+    "failures": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "count": { "type": "integer", "minimum": 0 },
+        "categories": {
+          "type": "object",
+          "additionalProperties": { "type": "integer", "minimum": 0 }
+        },
+        "items": { "type": "array", "items": { "$ref": "failure.schema.json" } }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "host": { "type": "string" },
+        "python": { "type": "string" },
+        "duration_seconds": { "type": "number" }
+      }
+    },
+    "reproducibility": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "deterministic": { "type": "boolean" },
+        "logical_prediction_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "logical_metrics_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    }
+  }
+}

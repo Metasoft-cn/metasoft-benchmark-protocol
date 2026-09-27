@@ -1,0 +1,16 @@
+{
+  "id": "quant-adapter",
+  "protocol": {
+    "transport": "subprocess-stdio",
+    "framing": "jsonl",
+    "init_message": "load_market_config",
+    "event_message": "market_state",
+    "response_message": "orders_or_target_positions"
+  },
+  "commands": {
+    "run": "./adapter.py",
+    "version": "0.1.0"
+  },
+  "capabilities": ["target_positions", "orders", "pit_compliant"],
+  "license": "private"
+}

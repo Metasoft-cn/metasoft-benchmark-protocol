@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://metasoft.github.io/mbp/schemas/engine-adapter.schema.json",
+  "title": "Metasoft Engine Adapter Interface",
+  "description": "Declares the subprocess contract a system under test must satisfy. The runner sends load_script then one event per line on stdin; the adapter writes one prediction JSON object per line on stdout.",
+  "type": "object",
+  "required": ["id", "protocol", "commands"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]{1,40}$" },
+    "protocol": {
+      "type": "object",
+      "required": ["transport", "framing"],
+      "additionalProperties": false,
+      "properties": {
+        "transport": { "enum": ["subprocess-stdio", "http", "grpc"] },
+        "framing": { "enum": ["jsonl", "json", "protobuf"] },
+        "init_message": { "type": "string", "description": "The first message sent, e.g. load_script." },
+        "event_message": { "type": "string", "description": "Per-event message shape." },
+        "response_message": { "type": "string", "description": "Per-prediction response shape." }
+      }
+    },
+    "commands": {
+      "type": "object",
+      "required": ["run"],
+      "additionalProperties": false,
+      "properties": {
+        "run": { "type": "string", "description": "The command to launch the adapter." },
+        "version": { "type": "string" }
+      }
+    },
+    "capabilities": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Optional capabilities the adapter supports, e.g. candidate_detection, navigation_metadata."
+    },
+    "license": { "type": "string" }
+  }
+}

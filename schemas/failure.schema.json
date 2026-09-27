@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://metasoft.github.io/mbp/schemas/failure.schema.json",
+  "title": "Metasoft Benchmark Failure Record",
+  "description": "A single failure case. Failure-first reporting: expose failure modes before aggregate scores.",
+  "type": "object",
+  "required": ["category", "case_id", "expected", "actual", "severity"],
+  "additionalProperties": true,
+  "properties": {
+    "category": {
+      "type": "string",
+      "description": "The failure class, e.g. wrong_backward, false_jump_commit, unsupported_business_claim, temporal_leakage."
+    },
+    "case_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The case that triggered the failure."
+    },
+    "expected": {
+      "description": "The expected outcome. Type is domain-specific.",
+      "additionalProperties": true
+    },
+    "actual": {
+      "description": "The observed outcome. Type is domain-specific.",
+      "additionalProperties": true
+    },
+    "severity": {
+      "enum": ["catastrophic", "major", "minor"]
+    },
+    "reproduction": {
+      "type": "string",
+      "description": "A command or trace that reproduces the failure, e.g. csfb replay --case <id> --trace."
+    },
+    "metric_impact": {
+      "type": "string",
+      "description": "Which metric(s) this failure contributes to."
+    }
+  }
+}
