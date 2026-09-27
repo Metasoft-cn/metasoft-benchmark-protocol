@@ -4,6 +4,13 @@ All notable changes to the Metasoft Benchmark Protocol are recorded here.
 
 ## Unreleased
 
+### Added
+- `benchmark-core/` Phase 1 prototype: unified benchmark runtime (adapter, metric, dataset, runner, report, provenance, hidden_evaluator).
+- 38 tests passing: core modules + AIB integration + CSFB retrofit + end-to-end.
+- AIB integration example (`benchmark-core/examples/aib_integration.py`): wraps AIB's 3 baselines and 6 metrics, verified against real AIB dataset (24 cases × 3 repeats).
+- CSFB retrofit example (`benchmark-core/examples/csfb_retrofit.py`): wraps CSFB's event-driven engine protocol.
+- CI workflow for `benchmark-core` (Ubuntu/Windows × Python 3.11/3.12).
+
 ### Changed
 - Roadmap refined to Phase 1–5 ordering: benchmark-core → AIB v0.2 → Adaptive Speaking Engine (private) → AI Website → Quant.
 - `docs/EVALUATION_ENGINE_DESIGN.md` status updated from DESIGN ONLY to Phase 1 implementation in progress.
