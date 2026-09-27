@@ -1,6 +1,6 @@
-# 为什么 AI Agent 时代需要 Evaluation Infrastructure
+# From Unit Tests to Agent Evaluation Protocols: Building Trustworthy AI Agent Infrastructure
 
-> 技术文章骨架 — 基于 MBP (Metasoft Benchmark Protocol)
+> 基于 MBP (Metasoft Benchmark Protocol) — 不是又一个 benchmark，是"怎么做 benchmark"的工程协议。
 
 ## 引言
 
@@ -11,6 +11,82 @@ AI Agent 时代，每个人都在建 Agent。
 > 这个 Agent 到底行不行？
 
 不是"demo 看起来很酷"。而是"在什么标准下，它行？"
+
+## 评测的三个时代
+
+### 时代 1：Unit Test（确定性断言）
+
+```python
+def test_add():
+    assert add(1, 2) == 3
+    assert add(-1, 1) == 0
+```
+
+- 输入确定，输出确定
+- pass / fail 二元判定
+- 覆盖率 = 测试用例数 / 代码路径数
+- 代表工具：pytest, JUnit
+
+**适用场景**：传统软件，行为完全确定。
+
+**为什么对 AI 不够**：AI 系统输出有随机性，"正确答案"不是单一的。
+`assert llm("翻译这句话") == "Hello"` 永远会 flaky。
+
+### 时代 2：ML Benchmark（测试集 + 指标 + 排行榜）
+
+```
+ImageNet:  1.4M images, 1000 classes, top-1 accuracy
+SQuAD:     100k questions, exact match + F1
+GLUE:      8 NLP tasks, average score
+```
+
+- 测试集固定，指标固定
+- 分数是连续值（accuracy, F1, BLEU）
+- 排行榜驱动竞争
+- 代表平台：Papers with Code, HuggingFace Leaderboard
+
+**适用场景**：模型评测，输入→输出有标准答案。
+
+**为什么对 Agent 不够**：
+
+- Agent 是多步骤，不是单次输入输出
+- Agent 的"正确"不是匹配标准答案，而是完成目标
+- Agent 可以针对公开测试集 overfit（刷榜）
+- Agent 的失败模式比"准确率低"复杂得多
+- 排行榜鼓励优化分数，不鼓励暴露失败
+
+### 时代 3：Agent Evaluation Protocol（多维度 + 防刷榜 + 可复现）
+
+```
+MBP:
+  dataset split (train/dev/public_test/hidden_test)
+  perturbation generator (语义保持, 表面变化)
+  invariance test (同能力, 不同表达 → 分数应接近)
+  hidden holdout (公开分数 vs 验证分数)
+  provenance (SHA256 + seed + version)
+  failure case exposure (不只给分数, 暴露失败模式)
+```
+
+- 多维度指标，不是单一分数
+- 防刷榜机制（hidden holdout + invariance）
+- 可复现（provenance 完整记录）
+- 失败案例优先暴露
+- 公开 protocol，私有护城河
+
+**适用场景**：AI Agent / AI 系统评测，行为复杂、可被针对优化、需要可信度验证。
+
+### 三个时代的对比
+
+| | Unit Test | ML Benchmark | Agent Evaluation Protocol |
+|---|-----------|--------------|--------------------------|
+| 输出 | 确定 | 确定（有标准答案） | 不确定（多步骤，路径多样） |
+| 判定 | pass/fail | 连续分数 | 多维度 + 失败模式 |
+| 测试集 | 代码路径 | 固定数据集 | split + perturbation + hidden |
+| 防刷榜 | 不需要 | 不需要（学术诚信） | 必需（商业竞争） |
+| 可复现 | 天然可复现 | 需要记录 seed | 需要 provenance 全链路 |
+| 代表 | pytest | ImageNet | MBP |
+
+MBP 不是替代前两个时代，是在 Agent 场景下，前两个时代不够用的回答。
 
 ## 当前问题
 
@@ -162,6 +238,9 @@ train / dev / public_test / hidden_test
 ## 结论
 
 AI Agent 时代不需要又一个 leaderboard。
+
+从 Unit Test 到 ML Benchmark 到 Agent Evaluation Protocol，评测基础设施必须演进：
+确定性断言不够，单一分数不够，公开排行榜不够。
 
 它需要的是：
 

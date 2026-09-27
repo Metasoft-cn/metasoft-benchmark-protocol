@@ -1,134 +1,137 @@
-# Metasoft Benchmark Protocol (MBP)
+# Metasoft Benchmark Protocol
 
-**A reusable engineering protocol for building reproducible, anti-gaming benchmarks across domains.**
+**AI System Evaluation Infrastructure**
 
-MBP defines the shared rules that every Metasoft benchmark follows: how datasets are versioned and frozen, how results are reported, how failure cases are exposed before aggregate scores, how hidden evaluation sets is protected, and how benchmark gaming is discouraged. It is not a large SDK; v0.1 is a draft specification plus JSON schemas and two reference modes.
+Reproducible benchmarks for speech AI, interview AI, agent systems, and future AI applications. Not a leaderboard. Not a SaaS. A protocol, a shared runtime, and a methodology.
 
-## Status
+---
 
-- **Version:** 0.1.0-draft (protocol spec); benchmark-core 0.1.0.dev1 (runtime)
-- **State:** Phase 1-2 complete. benchmark-core prototype + AIB v0.2-preview.1 methodology frozen.
-- **Not:** an industry standard. A working protocol used by Metasoft benchmarks.
+## Why MBP
 
-## Mission
+AI systems are improving faster than evaluation methods. Every product claims "95% accuracy" — but against what dataset, what metrics, what failure modes?
 
-> Turn "how to measure" itself into a reliable software-engineering asset.
+MBP turns "how to measure" into a reusable engineering asset:
 
-The goal is not many leaderboards. It is one mature public benchmark, one reusable protocol, a second-domain validation, and clear designs for the rest.
+- **Protocol** — how to define, version, and freeze a benchmark
+- **Runtime** — `benchmark-core`, a unified execution engine
+- **Methodology** — dataset split, perturbation generation, invariance testing, hidden holdout
 
-## Core principles
+---
 
-```
-Reproducible where possible.
-Hidden where necessary.
-Metrics before rankings.
-Failure cases before aggregate scores.
-Freeze before comparison.
-No benchmark tuning for a specific engine.
-```
+## Architecture
 
-In Chinese:
+```mermaid
+graph TD
+    MBP["Metasoft Benchmark Protocol"]
+    CORE["benchmark-core<br/>unified runtime"]
+    CSFB["CSFB<br/>Speech Follow Benchmark<br/>6,629 cases"]
+    AIB["AIB<br/>AI Interview Benchmark<br/>108 cases"]
+    FUTURE["Future Benchmarks<br/>Website · Quant"]
 
-```
-能公开复现的，尽量公开复现。
-必须防刷榜的，使用隐藏评测。
-先定义指标，再比较系统。
-优先暴露失败模式，而不是只给一个总分。
-比较前必须冻结评测。
-禁止为了某个被测系统修改 Benchmark。
-```
+    MBP --> CORE
+    CORE --> CSFB
+    CORE --> AIB
+    CORE --> FUTURE
 
-## Two evaluation modes
-
-| Mode | Dataset | Expected | Baselines | Runner | Use when |
-|---|---|---|---|---|---|
-| `OPEN_SUITE` | public | public or reproducible | public | public | the task can be fully reproduced by anyone |
-| `HIDDEN_SUITE` | protocol public, eval data hidden | hidden | submission black-box | controlled | anti-overfitting, anti-gaming, adversarial |
-
-See [`docs/OPEN_VS_HIDDEN.md`](docs/OPEN_VS_HIDDEN.md).
-
-## What MBP provides
-
-- [`SPEC.md`](SPEC.md) — the normative specification.
-- [`schemas/`](schemas/) — JSON Schemas for benchmark manifest, dataset manifest, results, failures, and engine adapters.
-- [`examples/open-suite/`](examples/open-suite/) — a minimal open-suite example extracted from CSFB.
-- [`examples/hidden-suite/`](examples/hidden-suite/) — a minimal hidden-suite skeleton (protocol + dev set, no holdout data).
-- [`docs/`](docs/) — freeze policy, metric policy, anti-gaming, failure corpus, reproducibility, reference implementations.
-
-## Reference implementations
-
-1. **Speech Follow Benchmark (CSFB)** — `OPEN_SUITE`, public, frozen at v0.2.0-preview.1. The first reference implementation MBP was extracted from. <https://github.com/Metasoft-cn/speech-follow-benchmark>
-2. **AI Interview Benchmark (AIB)** — `OPEN_SUITE` with `HIDDEN_HOLDOUT`, frozen at v0.2.0-preview.1. 108 cases, 4 core methodology assets (dataset split, perturbation generator, invariance test, hidden holdout). <https://github.com/Metasoft-cn/ai-interview-benchmark>
-
-See [`docs/REFERENCE_IMPLEMENTATIONS.md`](docs/REFERENCE_IMPLEMENTATIONS.md).
-
-## benchmark-core
-
-The unified benchmark runtime. Every Metasoft benchmark plugs into it instead of reimplementing runner/adapter/metric/provenance logic.
-
-```
-benchmark-core/
-├─ adapter/          # InProcess + Subprocess stdio
-├─ metric/           # Metric + MetricRegistry
-├─ dataset/          # JSONL loading, splits, SHA256
-├─ runner/           # execution engine
-├─ report/           # results.schema.json emitter
-├─ provenance/       # reproducibility metadata
-└─ hidden_evaluator/ # HIDDEN_SUITE boundary (stub)
+    CSFB -->|OPEN_SUITE| PUBLIC1["public dataset<br/>public metrics"]
+    AIB -->|OPEN_SUITE + HOLDOUT| PUBLIC2["public_test + hidden_test"]
+    FUTURE -->|HIDDEN_SUITE| PRIVATE["protocol public<br/>eval data hidden"]
 ```
 
-See [`benchmark-core/README.md`](benchmark-core/README.md) and [`docs/EVALUATION_ENGINE_DESIGN.md`](docs/EVALUATION_ENGINE_DESIGN.md).
+---
 
-## Repository layout
+## Current Benchmarks
+
+### CSFB — Speech Follow Benchmark
+
+**Problem:** AI teleprompters need to track speech in real-time, handle skips, detect jumps, and recover from lost position. No standard existed to measure this.
+
+- **Version:** v0.2.0-preview.1
+- **Cases:** 6,629 (48,851 events)
+- **Mode:** OPEN_SUITE
+- **Metrics:** event accuracy, final accuracy, false jump, skip detection, recovery latency, by-language, by-region
+- **Repo:** [Metasoft-cn/speech-follow-benchmark](https://github.com/Metasoft-cn/speech-follow-benchmark)
+
+### AIB — AI Interview Benchmark
+
+**Problem:** AI interview scoring systems are unreliable — scores drift across runs, keyword-match instead of understand, no evidence grounding. No benchmark tested the evaluator itself.
+
+- **Version:** v0.2.0-preview.1
+- **Cases:** 108 (24 curated + 60 generated + 24 invariance)
+- **Mode:** OPEN_SUITE + HIDDEN_HOLDOUT
+- **Methodology:** dataset split (train/dev/public_test/hidden_test), perturbation generator (paraphrase/verbosity/asr_noise), invariance test (6 groups), hidden holdout
+- **Repo:** [Metasoft-cn/ai-interview-benchmark](https://github.com/Metasoft-cn/ai-interview-benchmark)
+
+---
+
+## Design Principles
+
+| Principle | Why |
+|-----------|-----|
+| **Benchmark first** | You cannot improve what you cannot measure |
+| **Freeze before compare** | Changing benchmarks invalidate comparisons |
+| **Multi-dimensional** | Single scores hide failures |
+| **Failure cases first** | Failures are actionable, success rates are not |
+| **Invariance testing** | Keyword matching is not understanding |
+| **Hidden holdout** | Public scores can be gamed |
+| **Reproducibility** | Irreproducible results are anecdotes |
+| **Separation** | Benchmarks measure, they do not prescribe |
+
+See [`docs/BENCHMARK_PHILOSOPHY.md`](docs/BENCHMARK_PHILOSOPHY.md).
+
+---
+
+## Quick Start
+
+```bash
+git clone https://github.com/Metasoft-cn/metasoft-benchmark-protocol.git
+cd metasoft-benchmark-protocol/benchmark-core
+pip install -e ".[dev]"
+pytest  # 38 tests
+```
+
+---
+
+## Roadmap
+
+| Phase | What | Status |
+|-------|------|--------|
+| 1 | benchmark-core unified runtime | ✅ Complete |
+| 2 | AIB v0.2 methodology (split + perturbation + invariance + holdout) | ✅ Complete |
+| 3 | Adaptive Speaking Engine (private) | Design phase |
+| 3.5 | MBP Evaluation Cloud (private) | Planned |
+| 4 | AI Website Benchmark | Planned |
+| 5 | Quant Hidden Suite | Planned |
+
+See [`METASOFT_BENCHMARK_ROADMAP.md`](METASOFT_BENCHMARK_ROADMAP.md).
+
+---
+
+## Repository Map
 
 ```
 metasoft-benchmark-protocol/
-├─ README.md
-├─ SPEC.md
-├─ VERSIONING.md
-├─ REPRODUCIBILITY.md
-├─ SECURITY.md
-├─ CONTRIBUTING.md
-├─ CHANGELOG.md
-├─ LICENSE
-├─ schemas/
-│  ├─ benchmark.schema.json
-│  ├─ dataset-manifest.schema.json
-│  ├─ results.schema.json
-│  ├─ failure.schema.json
-│  └─ engine-adapter.schema.json
-├─ benchmark-core/          # unified runtime (Phase 1)
-│  ├─ benchmark_core/
-│  ├─ examples/             # AIB integration + CSFB retrofit
-│  └─ tests/
-├─ examples/
-│  ├─ open-suite/
-│  └─ hidden-suite/
-└─ docs/
-   ├─ OPEN_VS_HIDDEN.md
-   ├─ FREEZE_POLICY.md
-   ├─ METRIC_POLICY.md
-   ├─ ANTI_GAMING.md
-   ├─ FAILURE_CORPUS.md
-   ├─ REFERENCE_IMPLEMENTATIONS.md
-   ├─ SEPARATION_POLICY.md
-   └─ EVALUATION_ENGINE_DESIGN.md
+├── SPEC.md, VERSIONING.md, REPRODUCIBILITY.md   — protocol
+├── schemas/                                       — 5 JSON schemas
+├── benchmark-core/                                — unified runtime (38 tests)
+│   ├── examples/                                  — AIB + CSFB integration
+│   └── tests/
+├── docs/                                          — policies + philosophy + map
+├── examples/                                      — open-suite + hidden-suite
+├── articles/                                      — technical articles
+└── METASOFT_BENCHMARK_ROADMAP.md                  — phase status
 ```
 
-## Usage
+See [`docs/REPOSITORY_MAP.md`](docs/REPOSITORY_MAP.md) for details.
 
-A benchmark adopting MBP:
+---
 
-1. Fills a `benchmark.schema.json`-valid manifest declaring id, version, mode, domain.
-2. Fills a `dataset-manifest.schema.json`-valid dataset manifest with version, case/event counts, SHA256, seed.
-3. Emits `results.schema.json`-valid results with category breakdown and a failure corpus.
-4. Follows [`docs/FREEZE_POLICY.md`](docs/FREEZE_POLICY.md) (DRAFT → PREVIEW → FROZEN → DEPRECATED).
-5. Follows [`docs/ANTI_GAMING.md`](docs/ANTI_GAMING.md) if `HIDDEN_SUITE`.
+## Contributing
+
+Read [`CONTRIBUTING.md`](CONTRIBUTING.md). Key constraint: `benchmark-core` API is frozen — add new functionality in the benchmark layer, not the core.
+
+---
 
 ## License
 
 [Apache-2.0](LICENSE). Schemas and specification text are Apache-2.0; benchmarks adopting MBP keep their own licenses.
-
-## Public messaging
-
-Metasoft develops open, reproducible benchmarks and evaluation protocols for practical software systems. 元软正在构建面向实际软件系统的开放、可复现 Benchmark 与评测协议。
