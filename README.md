@@ -6,8 +6,8 @@ MBP defines the shared rules that every Metasoft benchmark follows: how datasets
 
 ## Status
 
-- **Version:** 0.1.0-draft
-- **State:** DRAFT — extracted from the first reference implementation (CSFB v0.2.0-preview.1)
+- **Version:** 0.1.0-draft (protocol spec); benchmark-core 0.1.0.dev1 (runtime)
+- **State:** Phase 1-2 complete. benchmark-core prototype + AIB v0.2-preview.1 methodology frozen.
 - **Not:** an industry standard. A working protocol used by Metasoft benchmarks.
 
 ## Mission
@@ -58,9 +58,26 @@ See [`docs/OPEN_VS_HIDDEN.md`](docs/OPEN_VS_HIDDEN.md).
 ## Reference implementations
 
 1. **Speech Follow Benchmark (CSFB)** — `OPEN_SUITE`, public, frozen at v0.2.0-preview.1. The first reference implementation MBP was extracted from. <https://github.com/Metasoft-cn/speech-follow-benchmark>
-2. **AI Interview Benchmark** — `OPEN_SUITE` with reserved `HIDDEN_HOLDOUT`, in development.
+2. **AI Interview Benchmark (AIB)** — `OPEN_SUITE` with `HIDDEN_HOLDOUT`, frozen at v0.2.0-preview.1. 108 cases, 4 core methodology assets (dataset split, perturbation generator, invariance test, hidden holdout). <https://github.com/Metasoft-cn/ai-interview-benchmark>
 
 See [`docs/REFERENCE_IMPLEMENTATIONS.md`](docs/REFERENCE_IMPLEMENTATIONS.md).
+
+## benchmark-core
+
+The unified benchmark runtime. Every Metasoft benchmark plugs into it instead of reimplementing runner/adapter/metric/provenance logic.
+
+```
+benchmark-core/
+├─ adapter/          # InProcess + Subprocess stdio
+├─ metric/           # Metric + MetricRegistry
+├─ dataset/          # JSONL loading, splits, SHA256
+├─ runner/           # execution engine
+├─ report/           # results.schema.json emitter
+├─ provenance/       # reproducibility metadata
+└─ hidden_evaluator/ # HIDDEN_SUITE boundary (stub)
+```
+
+See [`benchmark-core/README.md`](benchmark-core/README.md) and [`docs/EVALUATION_ENGINE_DESIGN.md`](docs/EVALUATION_ENGINE_DESIGN.md).
 
 ## Repository layout
 
@@ -80,6 +97,10 @@ metasoft-benchmark-protocol/
 │  ├─ results.schema.json
 │  ├─ failure.schema.json
 │  └─ engine-adapter.schema.json
+├─ benchmark-core/          # unified runtime (Phase 1)
+│  ├─ benchmark_core/
+│  ├─ examples/             # AIB integration + CSFB retrofit
+│  └─ tests/
 ├─ examples/
 │  ├─ open-suite/
 │  └─ hidden-suite/
@@ -89,7 +110,9 @@ metasoft-benchmark-protocol/
    ├─ METRIC_POLICY.md
    ├─ ANTI_GAMING.md
    ├─ FAILURE_CORPUS.md
-   └─ REFERENCE_IMPLEMENTATIONS.md
+   ├─ REFERENCE_IMPLEMENTATIONS.md
+   ├─ SEPARATION_POLICY.md
+   └─ EVALUATION_ENGINE_DESIGN.md
 ```
 
 ## Usage
