@@ -19,7 +19,7 @@ Two tracks run concurrently, but within each track the phase order is fixed:
 ```
 Public track:
   Phase 1  benchmark-core prototype          ✅ COMPLETE (c6472a0)
-  Phase 2  AIB v0.2 preview freeze           ← NEXT
+  Phase 2  AIB v0.2 preview freeze           ✅ COMPLETE (9f4df06, tag v0.2.0-preview.1)
   Phase 4  AI Website Benchmark
   Phase 5  Quant Hidden Suite
 
@@ -46,46 +46,18 @@ Commit `c6472a0`. 38 tests passing. AIB integration + CSFB retrofit verified.
 
 **Constraint: benchmark-core API is now frozen for Phase 2.** The interface just formed; early modification would force all downstream benchmarks to refactor. Phase 2 must not change benchmark-core's public API.
 
-## Phase 2 — AIB v0.2 preview freeze
+## Phase 2 — AIB v0.2 preview freeze ✅ COMPLETE
 
-**Goal: establish benchmark methodology, not just more cases.** The point is to build the evaluation credibility patterns that all future MBP benchmarks follow.
+Commit `9f4df06`, tag `v0.2.0-preview.1`. 108 total cases (24 curated + 60 generated + 24 invariance). 34 tests passing.
 
-### 2.1 Dataset split
+**Four core assets delivered:**
 
-```
-dataset/
-  train/          (public, for participants to calibrate)
-  dev/            (public, for development)
-  public_test/    (public, the reported score)
-  hidden_test/    (private, the verified score)
-```
+1. **Dataset split**: train(8) / dev(16) / public_test(30) / hidden_test(30, not released).
+2. **Perturbation generator**: 60 cases — paraphrase, verbosity, asr_noise. Deterministic (fixed seed, no LLM). Labels: `curated` / `template-derived` / `synthetic`.
+3. **Invariance evaluator**: 6 groups, 24 cases. Same capability, different question phrasings → scores should be close. MBP signature feature.
+4. **Hidden holdout**: `HOLDOUT_MANIFEST.json` with SHA256. Hidden test cases not released. MBP Public Score vs MBP Verified Score.
 
-Public: `public_test`. Hidden: `hidden_test`. This prevents models from optimizing directly against the benchmark.
-
-### 2.2 Perturbation generator
-
-Programmatic generation that preserves semantic intent while varying surface form:
-
-- Paraphrase: "介绍你的优势" → "为什么公司应该选择你"
-- Verbosity: expand/compress while keeping meaning
-- ASR-noise: inject recognition errors
-
-All generated cases labeled `curated` / `template-derived` / `synthetic`.
-
-### 2.3 Invariance test (MBP signature feature)
-
-Same capability, different surface expressions → scores should be close. Large drift indicates the evaluator is keyword-matching, not understanding. This is the differentiator that makes MBP credible.
-
-### 2.4 Hidden holdout
-
-Public score (`public_test`) vs verified score (`hidden_test`). The hidden holdout is never released. Participants cannot overfit.
-
-### 2.5 Freeze
-
-- Expand to 100–300 curated cases.
-- Freeze AIB at `PREVIEW` with dataset hash + tag.
-- AIB runs on `benchmark-core` (no API changes).
-- Output PREVIEW report.
+Preview report: `reports/AIB_PREVIEW_REPORT.md`. benchmark-core API unchanged.
 
 ## Phase 3 — Adaptive Speaking Engine (PRIVATE, not public)
 
