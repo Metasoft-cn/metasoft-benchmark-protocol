@@ -18,37 +18,74 @@ Two tracks run concurrently, but within each track the phase order is fixed:
 
 ```
 Public track:
-  Phase 1  benchmark-core prototype          ← NOW
-  Phase 2  AIB v0.2 preview freeze
+  Phase 1  benchmark-core prototype          ✅ COMPLETE (c6472a0)
+  Phase 2  AIB v0.2 preview freeze           ← NEXT
   Phase 4  AI Website Benchmark
   Phase 5  Quant Hidden Suite
 
 Private track:
-  Phase 3  Adaptive Speaking Engine           ← after Phase 2
+  Phase 3    Adaptive Speaking Engine         ← after Phase 2
+  Phase 3.5  MBP Evaluation Cloud             ← after Phase 3
 ```
 
 Phase 3 sits between Phase 2 and Phase 4 because the Adaptive Speaking Engine has the highest commercial value and reuses benchmark-core + AIB's evaluator metrics internally.
 
+Phase 3.5 (MBP Evaluation Cloud) is a private evaluation platform — not a public leaderboard SaaS, but an internal tool to run hidden holdouts, manage verified scores, and support commercial evaluation services. It depends on Phase 3 (Adaptive Speaking Engine needs internal evaluation) and feeds Phase 4/5 (Website/Quant need the evaluation infrastructure).
+
 ---
 
-## Phase 1 — benchmark-core prototype (NOW)
+## Phase 1 — benchmark-core prototype ✅ COMPLETE
 
-Build the shared runtime inside the MBP repo (`benchmark-core/`). Every future benchmark depends on it instead of reimplementing runner/adapter/metric/provenance logic.
+Commit `c6472a0`. 38 tests passing. AIB integration + CSFB retrofit verified.
 
-- Implement `benchmark-core/` subpackage: `schema/` re-export, `runner/`, `adapter/` loader + subprocess transport, `metric_engine/` registry, `report/` emitter, `provenance/`.
-- Define adapter registry: `SpeechAdapter`, `EvaluatorAdapter`, `StrategyAdapter`, `SiteAnalyzerAdapter`.
-- Integrate AIB first (smallest domain) as the first consumer.
-- Retrofit CSFB to adopt `benchmark-core`.
-- See [`docs/EVALUATION_ENGINE_DESIGN.md`](docs/EVALUATION_ENGINE_DESIGN.md).
+- `benchmark-core/` subpackage: adapter (InProcess + Subprocess), metric (Metric + MetricRegistry), dataset (splits + hash), runner, report (results.schema.json emitter), provenance (SHA256), hidden_evaluator (stub).
+- Adapter registry: `SpeechAdapter`, `EvaluatorAdapter`, `StrategyAdapter`, `SiteAnalyzerAdapter`.
+- AIB integrated as first consumer (3 baselines, 6 metrics, real dataset 24 cases × 3 repeats).
+- CSFB retrofit shows event-driven engine protocol adaptation.
+- CI: Ubuntu/Windows × Python 3.11/3.12.
+
+**Constraint: benchmark-core API is now frozen for Phase 2.** The interface just formed; early modification would force all downstream benchmarks to refactor. Phase 2 must not change benchmark-core's public API.
 
 ## Phase 2 — AIB v0.2 preview freeze
 
-- Expand AIB to 100–300 curated cases.
-- Add programmatic perturbation generation (paraphrase, verbosity, ASR-noise) with `curated` / `template-derived` / `synthetic` labels.
-- Add invariance tests as first-class benchmark cases.
-- Reserve a `HIDDEN_HOLDOUT`.
-- Freeze AIB at `PREVIEW` with a dataset hash and tag.
-- AIB now runs on `benchmark-core`.
+**Goal: establish benchmark methodology, not just more cases.** The point is to build the evaluation credibility patterns that all future MBP benchmarks follow.
+
+### 2.1 Dataset split
+
+```
+dataset/
+  train/          (public, for participants to calibrate)
+  dev/            (public, for development)
+  public_test/    (public, the reported score)
+  hidden_test/    (private, the verified score)
+```
+
+Public: `public_test`. Hidden: `hidden_test`. This prevents models from optimizing directly against the benchmark.
+
+### 2.2 Perturbation generator
+
+Programmatic generation that preserves semantic intent while varying surface form:
+
+- Paraphrase: "介绍你的优势" → "为什么公司应该选择你"
+- Verbosity: expand/compress while keeping meaning
+- ASR-noise: inject recognition errors
+
+All generated cases labeled `curated` / `template-derived` / `synthetic`.
+
+### 2.3 Invariance test (MBP signature feature)
+
+Same capability, different surface expressions → scores should be close. Large drift indicates the evaluator is keyword-matching, not understanding. This is the differentiator that makes MBP credible.
+
+### 2.4 Hidden holdout
+
+Public score (`public_test`) vs verified score (`hidden_test`). The hidden holdout is never released. Participants cannot overfit.
+
+### 2.5 Freeze
+
+- Expand to 100–300 curated cases.
+- Freeze AIB at `PREVIEW` with dataset hash + tag.
+- AIB runs on `benchmark-core` (no API changes).
+- Output PREVIEW report.
 
 ## Phase 3 — Adaptive Speaking Engine (PRIVATE, not public)
 
@@ -85,13 +122,17 @@ Build the shared runtime inside the MBP repo (`benchmark-core/`). Every future b
 ## Private track summary (not public until deliberately released)
 
 ```
-Phase 3  Adaptive Speaking Engine
-        ↓
-internal NextGen Benchmark   (uses MBP internally; not published)
-        ↓
-MTRS                         (internal product)
-        ↓
-selectively re-publish when ready
+Phase 3    Adaptive Speaking Engine
+           ↓
+Phase 3.5  MBP Evaluation Cloud (private)
+           — internal platform for hidden holdouts, verified scores,
+             commercial evaluation services
+           ↓
+           internal NextGen Benchmark   (uses MBP internally; not published)
+           ↓
+           MTRS                         (internal product)
+           ↓
+           selectively re-publish when ready
 ```
 
 Moat components (Personal Speech Rate Model, Time Budget Engine, Topic Contract, Dynamic Prompt, Improvisation, Rejoin) are evaluated internally only. See [`docs/SEPARATION_POLICY.md`](docs/SEPARATION_POLICY.md). A public benchmark for an overlapping capability, if ever desired, must measure the interface (input→output), not the internal model, and requires a deliberate release decision + human push confirmation.

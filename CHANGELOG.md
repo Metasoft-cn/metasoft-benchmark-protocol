@@ -12,8 +12,11 @@ All notable changes to the Metasoft Benchmark Protocol are recorded here.
 - CI workflow for `benchmark-core` (Ubuntu/Windows × Python 3.11/3.12).
 
 ### Changed
-- Roadmap refined to Phase 1–5 ordering: benchmark-core → AIB v0.2 → Adaptive Speaking Engine (private) → AI Website → Quant.
+- Roadmap refined to Phase 1–5 + Phase 3.5 ordering: benchmark-core → AIB v0.2 → Adaptive Speaking Engine (private) → MBP Evaluation Cloud (private) → AI Website → Quant.
+- Phase 1 marked COMPLETE (commit c6472a0).
+- Phase 2 expanded with methodology: dataset split (train/dev/public_test/hidden_test), perturbation generator, invariance test, hidden holdout.
 - `docs/EVALUATION_ENGINE_DESIGN.md` status updated from DESIGN ONLY to Phase 1 implementation in progress.
+- **benchmark-core API frozen for Phase 2** — no breaking changes to public API.
 
 ## 0.1.0-draft — 2026-09-27
 
