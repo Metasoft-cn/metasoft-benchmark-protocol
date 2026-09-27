@@ -1,6 +1,6 @@
 # Metasoft Evaluation Engine — Design Skeleton
 
-**Status:** DESIGN ONLY. No implementation in this phase.
+**Status:** Phase 1 implementation in progress. See roadmap.
 **Goal:** a unified benchmark runtime so MBP is a real protocol, not a collection of independent repos.
 
 ## Why
@@ -87,4 +87,4 @@ Benchmarks may still run without the engine (CSFB and AIB v0.1 do). The engine i
 
 ## Status in the roadmap
 
-Design only. Implementation is a v0.2-track task, after AIB preview freeze. The first integration target is AIB (smallest domain), then CSFB retrofits, then Website/Quant adopt on build.
+Phase 1 (current). The first integration target is AIB (smallest domain), then CSFB retrofits, then Website/Quant adopt on build.

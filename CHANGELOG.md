@@ -2,6 +2,12 @@
 
 All notable changes to the Metasoft Benchmark Protocol are recorded here.
 
+## Unreleased
+
+### Changed
+- Roadmap refined to Phase 1–5 ordering: benchmark-core → AIB v0.2 → Adaptive Speaking Engine (private) → AI Website → Quant.
+- `docs/EVALUATION_ENGINE_DESIGN.md` status updated from DESIGN ONLY to Phase 1 implementation in progress.
+
 ## 0.1.0-draft — 2026-09-27
 
 ### Added
